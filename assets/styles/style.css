@@ -1,0 +1,15 @@
+input {
+    margin: 5px;
+}
+
+a {
+    margin: 5px;
+}
+
+input[name="toggle-is-finished-checkbox"] {
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    margin:auto;
+}
