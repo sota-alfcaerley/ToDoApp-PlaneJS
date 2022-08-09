@@ -57,30 +57,41 @@
             </div>
         </div>
 
+        <!-- Modal -->
+        <div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Task</h5>
+                        <button type="button" class="btn-close" id="topEditTaskModalCloseButton"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editTaskForms">
+                            <label for="editTaskModalTextArea">Task Title</label>
+                            <textarea class="form-control" id="editTaskTextArea" rows="1"></textarea>
+                            <label for="editTaskModalPrioritySelect">Priotiry</label>
+                            <select class="form-select" id="editTaskModalPrioritySelect">
+                                <option value="HIGH">HIGH</option>
+                                <option value="MID">MID</option>
+                                <option value="LOW">LOW</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="bottomEditTaskModalCloseButton">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="editTaskButton">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="container card">
             <ul class="list-group list-group-flush" id="todo-item-list">
                 <li class="list-group-item">
-                    <input class="form-check-input" type="checkbox">
-                    A first item
-                    <button type="button" class="btn btn-primary">
-                        編集<i class="bi bi-pen-fill"></i>
-                    </button>
-                    <input type="button" class="btn btn-primary" />
-                    <input type="button" class="btn btn-primary" />
-                </li>
-                <li class="list-group-item">
-                    <input class="form-check-input" type="checkbox">
-                    A second item
-                    <input type="button" class="btn btn-primary" />
-                    <input type="button" class="btn btn-primary" />
-                    <input type="button" class="btn btn-primary" />
-                </li>
-                <li class="list-group-item">
-                    <input class="form-check-input" type="checkbox">
-                    A third item
-                    <input type="button" class="btn btn-primary" />
-                    <input type="button" class="btn btn-primary" />
-                    <input type="button" class="btn btn-primary" />
                 </li>
             </ul>
         </div>

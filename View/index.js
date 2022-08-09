@@ -1,18 +1,23 @@
 'use strict';
 var globalTodoItems;
 
+// 追加モーダル制御用インスタンス
+var addNewTaskModal = new bootstrap.Modal(document.getElementById('addNewTaskModal'), {
+    toggle: true
+});
+
+// 編集モーダル制御用インスタンス
+var editTaskModal = new bootstrap.Modal(document.getElementById('editTaskModal'), {
+    toggle: true
+});
+
 window.addEventListener('DOMContentLoaded', function () {
     // ToDo初期値設定
     var todoItems = initializeToDoItems();
 
     // ToDo明細作成、イベントハンドラ定義
-    todoItems.filter(x => x.isDeleted === false).forEach(element => {
+    todoItems.filter(x => !x.isDeleted).forEach(element => {
         createToDoItemComponent(element); 
-    });
-
-    // モーダル制御用インスタンス
-    var addNewTaskModal = new bootstrap.Modal(document.getElementById('addNewTaskModal'), {
-        toggle: true
     });
 
     // プラスボタン押下時イベント
@@ -22,18 +27,34 @@ window.addEventListener('DOMContentLoaded', function () {
 
     // ToDo追加モーダル.追加ボタン押下時イベント
     document.getElementById('addTaskButton').addEventListener('click', function(){
-        onClickAddTaskButton();
+        onClickSubmitTaskButton();
         addNewTaskModal.toggle();
-    }, false)
+    }, false);
 
     // ToDo追加モーダル.下Xボタン押下時イベント
     document.getElementById('bottomCloseButton').addEventListener('click', function(){
         addNewTaskModal.toggle();
-    }, false)
+    }, false);
 
     // ToDo追加モーダル.上Xボタン押下時イベント
     document.getElementById('topCloseButton').addEventListener('click', function(){
         addNewTaskModal.toggle();
+    }, false);
+
+    // ToDo編集モーダル.チェックボタン押下時イベント
+    document.getElementById('editTaskButton').addEventListener('click', function(){
+        onClickSubmitEditTaskButton();
+        addNewTaskModal.toggle();
+    }, false);
+
+    // ToDo編集モーダル.下Xボタン押下時イベント
+    document.getElementById('bottomEditTaskModalCloseButton').addEventListener('click', function(){
+        editTaskModal.toggle();
+    }, false);
+
+    // ToDo編集モーダル.上Xボタン押下時イベント
+    document.getElementById('topEditTaskModalCloseButton').addEventListener('click', function(){
+        editTaskModal.toggle();
     }, false);
 
     globalTodoItems = todoItems;
@@ -46,7 +67,6 @@ class ToDoItem {
         this.id = id;
         this.title = title;
         this.priority = priority;
-        // this.limit = limit;
         this.isFinished = isFinished;
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
@@ -61,7 +81,6 @@ function initializeToDoItems() {
             1,
             "Study javascript",
             "HIGH",
-            // "2020/08/08",
             true,
             false,
             "2020/08/08",
@@ -71,7 +90,6 @@ function initializeToDoItems() {
             2,
             "Save Money",
             "HIGH",
-            // "2020/08/08",
             false,
             false,
             "2020/08/08",
@@ -81,7 +99,6 @@ function initializeToDoItems() {
             3,
             "Remove Project",
             "HIGH",
-            // "2020/08/08",
             false,
             false,
             "2020/08/08",
@@ -91,7 +108,6 @@ function initializeToDoItems() {
             4,
             "Study Vue",
             "HIGH",
-            // "2020/08/08",
             true,
             false,
             "2020/08/08",
@@ -101,7 +117,6 @@ function initializeToDoItems() {
             5,
             "Read Invert",
             "HIGH",
-            // "2020/08/08",
             false,
             false,
             "2020/08/08",
@@ -117,9 +132,11 @@ function createToDoItemComponent(todoItem) {
         var item = document.createElement('li');
         item.className = 'list-group-item';
         list.appendChild(item);
-    
 
-        if(todoItem.isFinished === true){
+        var row = document.createElement('row');
+        item.appendChild(row);
+    
+        if(todoItem.isFinished){
             item.style.backgroundColor = '#e6e6fa';
         } else {
             item.style.backgroundColor = '';
@@ -132,7 +149,7 @@ function createToDoItemComponent(todoItem) {
         input_checkBox.checked = todoItem.isFinished;
         input_checkBox.addEventListener('change', function(){
             onToggleCheckbox(todoItem.id, input_checkBox.checked);
-            if(todoItem.isFinished === true){
+            if(todoItem.isFinished){
                 item.style.backgroundColor = '#e6e6fa';
             } else {
                 item.style.backgroundColor = '';
@@ -155,17 +172,12 @@ function createToDoItemComponent(todoItem) {
         priority.class = 'priority';
         item.appendChild(priority);
 
-        // var limit = document.createElement('a');
-        // limit.textContent = todoItem.limit;
-        // limit.class = 'limit';
-        // item.appendChild(limit);
-
         var input_editButton = document.createElement('button');
         input_editButton.name = 'edit-button';
         input_editButton.className = 'btn btn-primary';
         input_editButton.class = 'item-button';
-        input_editButton.addEventListener('click', function(){
-            onClickEditButton(todoItem.id)
+        input_editButton.addEventListener('click', function(){         
+            onClickEditButton(todoItem.id, todoItem.title, todoItem.priority)
         }, false);
         item.appendChild(input_editButton);
 
@@ -178,49 +190,56 @@ function createToDoItemComponent(todoItem) {
         input_deleteButton.className = 'btn btn-primary';
         input_deleteButton.class='item-button';
         input_deleteButton.addEventListener('click', function(){
-            onclickDeleteButton(todoItem.id, list, input_deleteButton)
+            onclickDeleteButton(todoItem.id, item, input_deleteButton)
         }, false);
         item.appendChild(input_deleteButton);
 
         var trush_icon = document.createElement('i');
         trush_icon.className = 'bi bi-trash-fill';
         input_deleteButton.appendChild(trush_icon);
-
 };
 
-function onClickPlusButton() {
+// 追加モーダルチェックボタン押下時イベント
+function onClickSubmitTaskButton(){
+        var ids = globalTodoItems.map(function (p) {
+            return p.id;
+          });
+    
+        var id = Math.max.apply(null, ids) + 1;
+        var title = document.getElementById('newTaskTextArea').value;
+        var priority = document.getElementById('newTaskPrioritySelect').value;
+        var isFinished = false;
+        var isDeleted = false;
+        var createdAt = new Date().toDateString();
+        var updatedAt = new Date().toDateString();
+    
+        var todoItem = new ToDoItem(id, title, priority, isFinished, isDeleted, createdAt, updatedAt)
+        createToDoItemComponent(todoItem);
+        globalTodoItems.push(todoItem);
+};
 
-}
-
-// 
-function onClickAddTaskButton(){
-    var ids = globalTodoItems.map(function (p) {
-        return p.id;
-      });
-
-    var id = Math.max.apply(null, ids) + 1;
-    var title = document.getElementById('newTaskTextArea').value
-    var priority = document.getElementById('newTaskPrioritySelect').value;
-    var isFinished = false;
-    var isDeleted = false;
-    var createdAt = new Date().toDateString();
-    var updatedAt = new Date().toDateString();
-
-    var todoItem = new ToDoItem(id, title, priority, isFinished, isDeleted, createdAt, updatedAt)
-    createToDoItemComponent(todoItem);
-    globalTodoItems.push(todoItem);
-}
-
+// チェックボックス押下時イベント
 function onToggleCheckbox(id, checked) {
     globalTodoItems.find(x => x.id === id).isFinished = checked;
 }
 
-function onClickEditButton(id) {
-    console.log('click:',id);
-}
+// 編集ボタン押下時イベント
+function onClickEditButton(title, priority) {
+    editTaskModal.toggle();
+    var titleTextArea = document.getElementById('editTaskTextArea');
+    titleTextArea.textContent = title;
+    var prioritySelect = document.getElementById('editTaskModalPrioritySelect');
+    prioritySelect.value = priority;
+};
 
+// 編集モーダル押下時イベント
+function onClickSubmitEditTaskButton(){
+
+};
+
+// 削除ボタン押下時イベント
 function onclickDeleteButton(id, items, input_deleteButton) {
     globalTodoItems.find(x => x.id === id).isDeleted = true;
     var selectedTodo = input_deleteButton.closest('li');
     items.removeChild(selectedTodo);
-}
+};
